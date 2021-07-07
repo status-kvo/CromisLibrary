@@ -114,7 +114,7 @@ uses
 {$ELSE}
   LMessages, LCLType, LCLIntf,
 {$ENDIF}
-  SysUtils, Classes, DateUtils, Math, Contnrs,
+  SysUtils, Classes, DateUtils, Math, Contnrs, Types,
 
   // cromis units
   Cromis.StringUtils;
@@ -243,6 +243,7 @@ type
     FOnScheduleEvent: TSchNotifyEvent;
     FOnScheduleInvalid: TSchNotifyEvent;
     FOnMaxEventsExecuted: TSchNotifyEvent;
+    FIsExecute: Boolean;  // kvo
   {$IFDEF MSWINDOWS}
     procedure WndProc(var msg: TMessage);
     procedure DeallocateHWnd(Wnd: HWND);
@@ -250,12 +251,14 @@ type
     procedure OnScheduleTerminated(Sender: TObject);
   private
     procedure SetSignalType(const Value: TSignalType);
+    function IsExecuteGet: Boolean;  // kvo
+    procedure IsExecuteSet(const AValue: Boolean); //kvo
   public
-    constructor Create(Name: string);
+    constructor Create(const AName: string);  // kvo
     destructor Destroy; override;
     function Run(const RunAtOnce: Boolean = False): Boolean;
-    procedure ExecuteEvent;
-    procedure Restart;
+    procedure ExecuteEvent;                              // kvo
+    procedure Restart(const RunAtOnce: Boolean = False); // kvo
     procedure Resume;
     procedure Pause;
     procedure Stop;
@@ -265,6 +268,8 @@ type
     property Restarting: Boolean read FRestarting;
     property SignalType: TSignalType read FSignalType write SetSignalType;
     property ExecuteLimit: Int64 read FExecuteLimit write FExecuteLimit;
+    property IsExecute: Boolean read IsExecuteGet write IsExecuteSet;
+  public
     property OnScheduleRun: TSchNotifyEvent read FOnScheduleRun write FOnScheduleRun;
     property OnScheduleStop: TSchNotifyEvent read FOnScheduleStop write FOnScheduleStop;
     property OnScheduleEvent: TSchNotifyEvent read FOnScheduleEvent write FOnScheduleEvent;
@@ -948,9 +953,10 @@ end;
 
 { TScheduledEvent }
 
-constructor TScheduledEvent.Create(Name: string);
+constructor TScheduledEvent.Create(const AName: string);
 begin
-  FName := Name;
+  FName := AName;
+  FIsExecute := False;  // kvo
   // set the signal type to message
   SignalType := {$IFDEF MSWINDOWS}stMessage{$ELSE}stThreaded{$ENDIF};
   // create the internal schedule
@@ -965,14 +971,21 @@ begin
   inherited;
 end;
 
-procedure TScheduledEvent.ExecuteEvent;
+procedure TScheduledEvent.ExecuteEvent ;
 begin
   if ((FExecuteCount < FExecuteLimit) or (FExecuteLimit = 0)) and FRunning then
   begin
     Inc(FExecuteCount);
 
     if Assigned(FOnScheduleEvent) then
-      FOnScheduleEvent(Self);
+    begin
+      IsExecute := True;
+      try
+        FOnScheduleEvent(Self);
+      finally
+        IsExecute := False;
+      end;
+    end;
 
     if (FExecuteCount >= FExecuteLimit) and (FExecuteLimit > 0) then
     begin
@@ -980,6 +993,26 @@ begin
         FOnMaxEventsExecuted(Self);
       Stop;
     end;
+  end;
+end;
+
+function TScheduledEvent.IsExecuteGet: Boolean;
+begin
+  TMonitor.Enter(Self);
+  try
+    Result := FIsExecute
+  finally
+    TMonitor.Exit(Self);
+  end;
+end;
+
+procedure TScheduledEvent.IsExecuteSet(const AValue: Boolean);
+begin
+  TMonitor.Enter(Self);
+  try
+    FIsExecute := AValue;
+  finally
+    TMonitor.Exit(Self);
   end;
 end;
 
@@ -1026,12 +1059,12 @@ end;
 {$ENDIF}
 
 
-procedure TScheduledEvent.Restart;
+procedure TScheduledEvent.Restart(const RunAtOnce: Boolean);
 begin
   FRestarting := True;
   try
     Stop;
-    Run;
+    Run(RunAtOnce);
   finally
     FRestarting := False;
   end;
