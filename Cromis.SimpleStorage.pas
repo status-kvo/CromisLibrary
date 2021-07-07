@@ -94,10 +94,13 @@ uses
   SysUtils, Classes, Controls, Contnrs, Graphics, GraphUtil,
 
   // omniXML library units
-  {$IFNDEF USE_MSXML}OmniXML{$ELSE}MSXML, OmniXML_MSXML{$ENDIF},OmniXML_Types, OmniXMLUtils,
+  {$IFNDEF USE_MSXML}Xml.Internal.OmniXML{$ELSE}MSXML, OmniXML_MSXML{$ENDIF}, //OmniXML_Types, OmniXMLUtils,
 
   // internal cromis units
   Cromis.StringUtils, Cromis.Streams;
+
+type
+  XmlString = string;
 
 type
   TElementType = (etValue, etNode);
@@ -141,13 +144,13 @@ type
 
   IStorageBase = Interface(IInterface)
   ['{C41F71F0-1EEC-40E3-A7D7-B83EBBB45C3B}']
-    function GetElementNode: IXMLNode;
-    procedure SetElementNode(const Value: IXMLNode);
+    function GetElementNode: OmniIXMLNode;
+    procedure SetElementNode(const Value: OmniIXMLNode);
     function LoadValueAsString: XmlString;
     procedure LoadValueAsStream(const Value: TStream);
     procedure SaveValueAsStream(const Value: TStream);
     procedure SaveValueAsString(const Value: XmlString);
-    property ElementNode: IXMLNode read GetElementNode write SetElementNode;
+    property ElementNode: OmniIXMLNode read GetElementNode write SetElementNode;
   end;
 
   IStorageData = Interface(IStorageBase)
@@ -332,7 +335,7 @@ type
 
   ICustomFilterData = Interface(IInterface)
   ['{E6AEC66D-733C-4126-8ACD-4F9CD841911C}']
-    function ValueFilterData(const Node: IXMLNode): IValueFilterData;
+    function ValueFilterData(const Node: OmniIXMLNode): IValueFilterData;
     function DocumentFilterData: IDocumentFilterData;
   end;
 
@@ -340,7 +343,7 @@ type
   ['{D42DB0F3-766B-4392-A670-DA009D4BCB20}']
     // getters and setters
     function _GetParent: IElement;
-    function _GetXMLNode: IXMLNode;
+    function _GetXMLNode: OmniIXMLNode;
     function _GetHasNodes: Boolean;
     function _GetHasValues: Boolean;
     function _GetNodeIndex: Integer;
@@ -393,7 +396,7 @@ type
     property HasValues: Boolean read _GetHasValues;
     property NodeIndex: Integer read _GetNodeIndex;
     property HasNodes: Boolean read _GetHasNodes;
-    property XMLNode: IXMLNode read _GetXMLNode;
+    property XMLNode: OmniIXMLNode read _GetXMLNode;
     property Parent: IElement read _GetParent;
   end;
 
@@ -420,11 +423,11 @@ type
     procedure LoadFromXML(const XML: XmlString);
     procedure LoadFromFile(const FileName: XmlString);
     procedure LoadFromStream(const InStream: TStream);
-    procedure LoadFromXMLDocument(const Document: IXMLDocument);
+    procedure LoadFromXMLDocument(const Document: OmniIXMLDocument);
     function Content(const Structured: Boolean = False): XmlString;
     function Filter(const Data: ICustomFilterData): IDocumentFilter; overload;
     function LastLoadStatus: TLoadStatus;
-    function XMLDocument: IXMLDocument;
+    function XMLDocument: OmniIXMLDocument;
   end;
 
   // ***************************************************************************************
@@ -435,16 +438,16 @@ type
 
   TStorageBase = class(TInterfacedObject, IStorageBase)
   private
-    FElementNode: IXMLNode;
-    function GetElementNode: IXMLNode;
-    procedure SetElementNode(const Value: IXMLNode);
+    FElementNode: OmniIXMLNode;
+    function GetElementNode: OmniIXMLNode;
+    procedure SetElementNode(const Value: OmniIXMLNode);
   public
-    constructor Create(const ElementNode: IXMLNode);
+    constructor Create(const ElementNode: OmniIXMLNode);
     function LoadValueAsString: XmlString; virtual; abstract;
     procedure LoadValueAsStream(const Value: TStream); virtual; abstract;
     procedure SaveValueAsStream(const Value: TStream); virtual; abstract;
     procedure SaveValueAsString(const Value: XmlString); virtual; abstract;
-    property ElementNode: IXMLNode read GetElementNode write SetElementNode;
+    property ElementNode: OmniIXMLNode read GetElementNode write SetElementNode;
   end;
 
   TStorageData = class(TStorageBase, IStorageData)
@@ -532,19 +535,19 @@ type
   function StorageFromFile(const FileName: XmlString): ISimpleStorage;
   function StorageFromStream(const Stream: TStream): ISimpleStorage;
   function StorageFromElement(const Element: IElement): ISimpleStorage;
-  function StorageFromXMLDocument(const Document: IXMLDocument): ISimpleStorage;
+  function StorageFromXMLDocument(const Document: OmniIXMLDocument): ISimpleStorage;
 
   // function that takes a single XML node and makes an IElement
-  function ElementFromXMLNode(const Node: IXMLNode): IElement;
+  function ElementFromXMLNode(const Node: OmniIXMLNode): IElement;
 
   // functions that registers the global plugins for all simple storages
   procedure RegisterFilter(const Name: string; const DataClass: TStorageDataClass);
   procedure RegisterAdapter(const Name: string; const DataClass: TAdapterDataClass);
 
   // constructors for storage data
-  function AttrNormalProxy(const ElementNode: IXMLNode): IStorageData;
-  function NodeNormalProxy(const ElementNode: IXMLNode): IStorageData;
-  function CDataProxy(const ElementNode: IXMLNode): IStorageData;
+  function AttrNormalProxy(const ElementNode: OmniIXMLNode): IStorageData;
+  function NodeNormalProxy(const ElementNode: OmniIXMLNode): IStorageData;
+  function CDataProxy(const ElementNode: OmniIXMLNode): IStorageData;
 
   // function that creates a new document filter chain
   function CreateDocumentFilterChain: IDocumentFilterChain;
@@ -649,9 +652,9 @@ type
 
   TAttributes = class(TInterfacedObject, IAttributes)
   private
-    FElementNode: IXMLNode;
+    FElementNode: OmniIXMLNode;
   public
-    constructor Create(const ElementNode: IXMLNode);
+    constructor Create(const ElementNode: OmniIXMLNode);
     procedure Assign(const Attributes: IAttributes);
     procedure Update(const Attributes: IAttributes);
     function GetEnumerator: IAttributesEnumerator;
@@ -665,11 +668,11 @@ type
   TAttributesEnumerator = class(TInterfacedObject, IAttributesEnumerator)
   private
     FIndex: Integer;
-    FElementNode: IXMLNode;
-    FCurrentNode: IXMLNode;
+    FElementNode: OmniIXMLNode;
+    FCurrentNode: OmniIXMLNode;
     function _GetCurrent: IValue;
   public
-    constructor Create(const RootNode: IXMLNode);
+    constructor Create(const RootNode: OmniIXMLNode);
     function MoveNext: Boolean;
     property Current: IValue read _GetCurrent;
   end;
@@ -691,7 +694,7 @@ type
   TElement = class(TValue, IElement)
   private
     function _GetParent: IElement;
-    function _GetXMLNode: IXMLNode;
+    function _GetXMLNode: OmniIXMLNode;
     function _GetHasNodes: Boolean;
     function _GetNodeIndex: Integer;
     function _GetHasValues: Boolean;
@@ -700,9 +703,9 @@ type
     function _GetElementType: TElementType;
     function DoConstructPath(const Path: array of XmlString): XmlString;
     function AssignUniqueValueNode(const Template, Target: IElement; const IndexList: TList): IElement;
-    function InternalAppend(const Path: XmlString; const Append: Boolean): IXMLNode;
+    function InternalAppend(const Path: XmlString; const Append: Boolean): OmniIXMLNode;
     procedure AppendAllElements(const Element, Node: IElement; const Recurse: Boolean);
-    procedure DeleteAllChildNodes(const ParentNode: IXMLNode);
+    procedure DeleteAllChildNodes(const ParentNode: OmniIXMLNode);
     procedure MergeAllElements(const Element, Node: IElement);
   public
     function Attributes: IAttributes;
@@ -750,7 +753,7 @@ type
     property HasValues: Boolean read _GetHasValues;
     property NodeIndex: Integer read _GetNodeIndex;
     property HasNodes: Boolean read _GetHasNodes;
-    property XMLNode: IXMLNode read _GetXMLNode;
+    property XMLNode: OmniIXMLNode read _GetXMLNode;
     property Parent: IElement read _GetParent;
   end;
 
@@ -758,10 +761,10 @@ type
   private
     function _GetCurrent: IElement;
   protected
-    FElements: IXMLNodeList;
-    FCurrentNode: IXMLNode;
+    FElements: OmniIXMLNodeList;
+    FCurrentNode: OmniIXMLNode;
   public
-    constructor Create(const Elements: IXMLNodeList);
+    constructor Create(const Elements: OmniIXMLNodeList);
     function MoveNext: Boolean; virtual; abstract;
     property Current: IElement read _GetCurrent;
   end;
@@ -783,12 +786,12 @@ type
 
   TElementsList = class(TInterfacedObject, IElementsList)
   private
-    FElements: IXMLNodeList;
+    FElements: OmniIXMLNodeList;
     function _GetLast: IElement;
     function _GetFirst: IElement;
     function _GetItem(const Index: Integer): IElement;
   public
-    constructor Create(const Elements: IXMLNodeList);
+    constructor Create(const Elements: OmniIXMLNodeList);
     function Count: Integer;
     function GetEnumerator: IElementsEnumerator;
     property Item[const Index: Integer]: IElement read _GetItem;
@@ -798,18 +801,18 @@ type
 
   TNodesList = class(TInterfacedObject, INodesList)
   private
-    FElements: IXMLNodeList;
+    FElements: OmniIXMLNodeList;
   public
-    constructor Create(const Elements: IXMLNodeList);
+    constructor Create(const Elements: OmniIXMLNodeList);
     function GetEnumerator: INodesEnumerator;
     function Count: Integer;
   end;
 
   TValuesList = class(TInterfacedObject, IValuesList)
   private
-    FElements: IXMLNodeList;
+    FElements: OmniIXMLNodeList;
   public
-    constructor Create(const Elements: IXMLNodeList);
+    constructor Create(const Elements: OmniIXMLNodeList);
     function GetEnumerator: IValuesEnumerator;
     function Count: Integer;
   end;
@@ -842,7 +845,7 @@ type
 
   TSimpleStorage = class(TElement, ISimpleStorage)
   private
-    FDataXML: IXMLDocument;
+    FDataXML: OmniIXMLDocument;
     FLoadStatus: TLoadStatus;
     procedure FillLoadError(const Success: Boolean);
     procedure InternalCreate(const RootNode: XmlString);
@@ -856,11 +859,11 @@ type
     procedure LoadFromXML(const XML: XmlString);
     procedure LoadFromFile(const FileName: XmlString);
     procedure LoadFromStream(const InStream: TStream);
-    procedure LoadFromXMLDocument(const Document: IXMLDocument);
+    procedure LoadFromXMLDocument(const Document: OmniIXMLDocument);
     function Content(const Structured: Boolean = False): XmlString;
     function Filter(const Data: ICustomFilterData): IDocumentFilter; overload;
     function LastLoadStatus: TLoadStatus;
-    function XMLDocument: IXMLDocument;
+    function XMLDocument: OmniIXMLDocument;
   end;
 
   // normal attribute data proxy
@@ -920,7 +923,7 @@ type
   public
     constructor Create;
     destructor Destroy; override;
-    function GetFilter(const Name: string; const Node: IXMLNode): IValueFilterData;
+    function GetFilter(const Name: string; const Node: OmniIXMLNode): IValueFilterData;
     function GetAdapter(const Name: string; const Element: IElement): IAdapterData;
     procedure RegisterFilter(const Name: string; const DataClass: TStorageDataClass);
     procedure RegisterAdapter(const Name: string; const DataClass: TAdapterDataClass);
@@ -993,13 +996,13 @@ begin
     Result.Append(SubElement, False);
 end;
 
-function StorageFromXMLDocument(const Document: IXMLDocument): ISimpleStorage;
+function StorageFromXMLDocument(const Document: OmniIXMLDocument): ISimpleStorage;
 begin
   Result := TSimpleStorage.Create(DATA_ROOT);
   Result.LoadFromXMLDocument(Document);
 end;
 
-function ElementFromXMLNode(const Node: IXMLNode): IElement;
+function ElementFromXMLNode(const Node: OmniIXMLNode): IElement;
 begin
   Result := TElement.Create(NodeNormalProxy(Node));
 end;
@@ -1017,17 +1020,17 @@ end;
 //  begin of the proxy data constructor functions
 // *****************************************************************************************
 
-function AttrNormalProxy(const ElementNode: IXMLNode): IStorageData;
+function AttrNormalProxy(const ElementNode: OmniIXMLNode): IStorageData;
 begin
   Result := TAttrNormalProxy.Create(ElementNode);
 end;
 
-function NodeNormalProxy(const ElementNode: IXMLNode): IStorageData;
+function NodeNormalProxy(const ElementNode: OmniIXMLNode): IStorageData;
 begin
   Result := TNodeNormalProxy.Create(ElementNode);
 end;
 
-function CDataProxy(const ElementNode: IXMLNode): IStorageData;
+function CDataProxy(const ElementNode: OmniIXMLNode): IStorageData;
 begin
   Result := TCDataProxy.Create(ElementNode);
 end;
@@ -1200,7 +1203,7 @@ begin
   InitializeStorage;
 end;
 
-procedure TSimpleStorage.LoadFromXMLDocument(const Document: IXMLDocument);
+procedure TSimpleStorage.LoadFromXMLDocument(const Document: OmniIXMLDocument);
 begin
   // clear the storage
   InternalCreate(Name);
@@ -1228,7 +1231,7 @@ begin
 {$ENDIF}
 end;
 
-function TSimpleStorage.XMLDocument: IXMLDocument;
+function TSimpleStorage.XMLDocument: OmniIXMLDocument;
 begin
   Result := FDataXML;
 end;
@@ -1243,7 +1246,7 @@ begin
     Result := 0;
 end;
 
-constructor TElementsList.Create(const Elements: IXMLNodeList);
+constructor TElementsList.Create(const Elements: OmniIXMLNodeList);
 begin
   FElements := Elements;
 end;
@@ -1286,7 +1289,7 @@ begin
     Inc(Result);
 end;
 
-constructor TValuesList.Create(const Elements: IXMLNodeList);
+constructor TValuesList.Create(const Elements: OmniIXMLNodeList);
 begin
   FElements := Elements;
 end;
@@ -1308,7 +1311,7 @@ begin
     Inc(Result);
 end;
 
-constructor TNodesList.Create(const Elements: IXMLNodeList);
+constructor TNodesList.Create(const Elements: OmniIXMLNodeList);
 begin
   FElements := Elements;
 end;
@@ -1442,7 +1445,7 @@ begin
   end;
 end;
 
-procedure TElement.DeleteAllChildNodes(const ParentNode: IXMLNode);
+procedure TElement.DeleteAllChildNodes(const ParentNode: OmniIXMLNode);
 var
   I: Integer;
 begin
@@ -1553,7 +1556,7 @@ end;
 
 function TElement.Append(const Path: XmlString): IElement;
 var
-  ListRoot: IXMLNode;
+  ListRoot: OmniIXMLNode;
 begin
   // append the child internally
   ListRoot := InternalAppend(Path, True);
@@ -1626,7 +1629,7 @@ var
     TargetAttr: IValue;
   begin
     Result := True;
-    
+
     for Attribute in Source.Attributes do
     begin
       TargetAttr := Target.Attributes.Get(Attribute.Name);
@@ -1684,7 +1687,7 @@ end;
 
 function TElement.Ensure(const Path: XmlString): IElement;
 var
-  ListRoot: IXMLNode;
+  ListRoot: OmniIXMLNode;
 begin
   ListRoot := FStorageData.ElementNode.SelectSingleNode(Path);
 
@@ -1777,13 +1780,13 @@ end;
 
 function TElement._GetRootElement: IElement;
 var
-  RootNode: IXMLNode;
+  RootNode: OmniIXMLNode;
 begin
   RootNode := FStorageData.ElementNode.OwnerDocument.DocumentElement;
   Result := TElement.Create(NodeNormalProxy(RootNode));
 end;
 
-function TElement._GetXMLNode: IXMLNode;
+function TElement._GetXMLNode: OmniIXMLNode;
 begin
   Result := FStorageData.ElementNode;
 end;
@@ -1801,11 +1804,11 @@ begin
   Result := GetAttr(DoConstructPath(Path), Name);
 end;
 
-function TElement.InternalAppend(const Path: XmlString; const Append: Boolean): IXMLNode;
+function TElement.InternalAppend(const Path: XmlString; const Append: Boolean): OmniIXMLNode;
 var
   I: Integer;
-  Attr: IXMLNode;
-  ListNode: IXMLNode;
+  Attr: OmniIXMLNode;
+  ListNode: OmniIXMLNode;
   PathList: TStringList;
   NodePath: XmlString;
   AttrName: XmlString;
@@ -1929,7 +1932,7 @@ end;
 
 { TBaseEnumerator }
 
-constructor TBaseEnumerator.Create(const Elements: IXMLNodeList);
+constructor TBaseEnumerator.Create(const Elements: OmniIXMLNodeList);
 begin
   if Elements <> nil then
   begin
@@ -2120,7 +2123,7 @@ end;
 
 { TAttributesEnumerator }
 
-constructor TAttributesEnumerator.Create(const RootNode: IXMLNode);
+constructor TAttributesEnumerator.Create(const RootNode: OmniIXMLNode);
 begin
   FElementNode := RootNode;
   FCurrentNode := nil;
@@ -2162,14 +2165,14 @@ begin
   Result := FElementNode.Attributes.Length;
 end;
 
-constructor TAttributes.Create(const ElementNode: IXMLNode);
+constructor TAttributes.Create(const ElementNode: OmniIXMLNode);
 begin
   FElementNode := ElementNode;
 end;
 
 function TAttributes.Ensure(const Name: XmlString): IValue;
 var
-  AttrNode: IXMLNode;
+  AttrNode: OmniIXMLNode;
 begin
   AttrNode := FElementNode.Attributes.GetNamedItem(Name);
 
@@ -2397,7 +2400,7 @@ begin
   end;
 end;
 
-function TPluginList.GetFilter(const Name: string; const Node: IXMLNode): IValueFilterData;
+function TPluginList.GetFilter(const Name: string; const Node: OmniIXMLNode): IValueFilterData;
 var
   I: Integer;
 begin
@@ -3055,17 +3058,17 @@ end;
 
 { TStorageBase }
 
-constructor TStorageBase.Create(const ElementNode: IXMLNode);
+constructor TStorageBase.Create(const ElementNode: OmniIXMLNode);
 begin
   FElementNode := ElementNode;
 end;
 
-function TStorageBase.GetElementNode: IXMLNode;
+function TStorageBase.GetElementNode: OmniIXMLNode;
 begin
   Result := FElementNode;
 end;
 
-procedure TStorageBase.SetElementNode(const Value: IXMLNode);
+procedure TStorageBase.SetElementNode(const Value: OmniIXMLNode);
 begin
   FElementNode := Value;
 end;

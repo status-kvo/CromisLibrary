@@ -1,11 +1,11 @@
 package Cromis.DesignTime;
 
 {$R *.res}
-{$R '..\Cromis.RoboMailer.dcr'}
+{$IFDEF IMPLICITBUILDING This IFDEF should not be used by users}
 {$ALIGN 8}
 {$ASSERTIONS ON}
 {$BOOLEVAL OFF}
-{$DEBUGINFO ON}
+{$DEBUGINFO OFF}
 {$EXTENDEDSYNTAX ON}
 {$IMPORTEDDATA ON}
 {$IOCHECKS ON}
@@ -23,17 +23,33 @@ package Cromis.DesignTime;
 {$WRITEABLECONST OFF}
 {$MINENUMSIZE 1}
 {$IMAGEBASE $400000}
+{$DEFINE DEBUG}
+{$ENDIF IMPLICITBUILDING}
+{$RUNONLY}
 {$IMPLICITBUILD OFF}
 
 requires
   rtl,
   vcl,
-  OverbyteIcs;
+  IndySystem,
+  IndyCore;
 
 contains
+  Cromis.AnyValue in '..\Cromis.AnyValue.pas',
+  Cromis.Comm.Custom in '..\Cromis.Comm.Custom.pas',
+  Cromis.Comm.IMC in '..\Cromis.Comm.IMC.pas',
+  Cromis.Comm.IPC in '..\Cromis.Comm.IPC.pas',
+  Cromis.Cryptography in '..\Cromis.Cryptography.pas',
+  Cromis.Detours in '..\Cromis.Detours.pas',
+  Cromis.DirectoryWatch in '..\Cromis.DirectoryWatch.pas',
+  Cromis.Hashing in '..\Cromis.Hashing.pas',
+  Cromis.Scheduler in '..\Cromis.Scheduler.pas',
+  Cromis.SimpleLog in '..\Cromis.SimpleLog.pas',
+  Cromis.Streams in '..\Cromis.Streams.pas',
+  Cromis.StringUtils in '..\Cromis.StringUtils.pas',
+  Cromis.Threading in '..\Cromis.Threading.pas',
   Cromis.Unicode in '..\Cromis.Unicode.pas',
-  Cromis.RoboMailer in '..\Cromis.RoboMailer.pas',
-  Cromis.StringUtils in '..\Cromis.StringUtils.pas';
+  Cromis.XTEA in '..\Cromis.XTEA.pas';
 
 end.
 

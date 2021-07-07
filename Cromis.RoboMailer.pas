@@ -1,57 +1,57 @@
 (*
- * This software is distributed under BSD license.
- *
- * Copyright (c) 2008 Iztok Kacin, Cromis (iztok.kacin@gmail.com).
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
- *
- * - Redistributions of source code must retain the above copyright notice, this
- *   list of conditions and the following disclaimer.
- * - Redistributions in binary form must reproduce the above copyright notice, this
- *   list of conditions and the following disclaimer in the documentation and/or
- *   other materials provided with the distribution.
- * - Neither the name of the Iztok Kacin nor the names of its contributors may be
- *   used to endorse or promote products derived from this software without specific
- *   prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
- * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
- * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
- * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
- * OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- * =============================================================================
- * Mass mailer that can send personalized emails from a simple TAB format
- * =============================================================================
- * 11/06/2012 (1.1.0)
- *   - Important fixes that change how the mailer behaves on mail errors
- *     It will now ensure that all mails in the list will at least try
- *     to be sent.
- * 25/09/2012 (1.1.1)
- *   - IsCaseSensitive property
- * 01/02/2013 (1.1.2)
- *   - Added support for custom headers
- * =============================================================================
+  * This software is distributed under BSD license.
+  *
+  * Copyright (c) 2008 Iztok Kacin, Cromis (iztok.kacin@gmail.com).
+  * All rights reserved.
+  *
+  * Redistribution and use in source and binary forms, with or without modification,
+  * are permitted provided that the following conditions are met:
+  *
+  * - Redistributions of source code must retain the above copyright notice, this
+  *   list of conditions and the following disclaimer.
+  * - Redistributions in binary form must reproduce the above copyright notice, this
+  *   list of conditions and the following disclaimer in the documentation and/or
+  *   other materials provided with the distribution.
+  * - Neither the name of the Iztok Kacin nor the names of its contributors may be
+  *   used to endorse or promote products derived from this software without specific
+  *   prior written permission.
+  *
+  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+  * IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+  * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+  * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+  * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+  * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+  * OF THE POSSIBILITY OF SUCH DAMAGE.
+  *
+  * =============================================================================
+  * Mass mailer that can send personalized emails from a simple TAB format
+  * =============================================================================
+  * 11/06/2012 (1.1.0)
+  *   - Important fixes that change how the mailer behaves on mail errors
+  *     It will now ensure that all mails in the list will at least try
+  *     to be sent.
+  * 25/09/2012 (1.1.1)
+  *   - IsCaseSensitive property
+  * 01/02/2013 (1.1.2)
+  *   - Added support for custom headers
+  * =============================================================================
 *)
 unit Cromis.RoboMailer;
 
 interface
 
 uses
-  Windows, SysUtils, Classes, StrUtils,
+  Windows,
+  SysUtils,
+  Classes,
+  StrUtils,
 
   // cromis units
-  Cromis.StringUtils,
-
-  // ICS units
-  OverbyteIcsSmtpProt;
+  Cromis.StringUtils;
 
 const
   cDefaultDelimiter = '%';
@@ -61,7 +61,7 @@ const
 
 const
   cDefaultCodePage = CP_UTF8;
-  cDefaultCharset = 'UTF-8';
+  cDefaultCharset  = 'UTF-8';
 
 type
   TMailStatus = record
@@ -71,33 +71,33 @@ type
     LastErrorCode: Integer;
   end;
 
-  TOnBeforeMailSend =  procedure(const Sender: TObject; const Status: TMailStatus; var SendMail: Boolean) of Object;
-  TOnMailSuccess = procedure(const Sender: TObject; const Status: TMailStatus) of Object;
-  TOnMailFailure = procedure(const Sender: TObject; const Status: TMailStatus) of Object;
-  TOnMailsDone = procedure(const Sender: TObject) of Object;
+  TOnBeforeMailSend = procedure(const Sender: TObject; const Status: TMailStatus; var SendMail: Boolean) of object;
+  TOnMailSuccess = procedure(const Sender: TObject; const Status: TMailStatus) of object;
+  TOnMailFailure = procedure(const Sender: TObject; const Status: TMailStatus) of object;
+  TOnMailsDone = procedure(const Sender: TObject) of object;
   TParamsArray = array of string;
 
   TRoboMailer = class(TComponent)
   private
-    FAdress: string;
-    FHeaders: TStringList;
-    FFailure: Boolean;
-    FFromName: string;
-    FBlocking: Boolean;
-    FFinished: Boolean;
-    FMailList: TStringList;
-    FHTMLText: TStringList;
-    FMailCount: Integer;
-    FBulkMails: Boolean;
-    FPlainText: TStringList;
-    FMailSubject: string;
-    FDataDelimiter: string;
-    FCustomHeaders: TStringList;
-    FHtmlSmtpClient: THtmlSmtpCli;
-    FOnMailsDone: TOnMailsDone;
-    FOnMailSuccess: TOnMailSuccess;
-    FOnMailFailure: TOnMailFailure;
-    FIsCaseSensitive: Boolean;
+    FAdress          : string;
+    FHeaders         : TStringList;
+    FFailure         : Boolean;
+    FFromName        : string;
+    FBlocking        : Boolean;
+    FFinished        : Boolean;
+    FMailList        : TStringList;
+    FHTMLText        : TStringList;
+    FMailCount       : Integer;
+    FBulkMails       : Boolean;
+    FPlainText       : TStringList;
+    FMailSubject     : string;
+    FDataDelimiter   : string;
+    FCustomHeaders   : TStringList;
+    FHtmlSmtpClient  : THtmlSmtpCli;
+    FOnMailsDone     : TOnMailsDone;
+    FOnMailSuccess   : TOnMailSuccess;
+    FOnMailFailure   : TOnMailFailure;
+    FIsCaseSensitive : Boolean;
     FOnBeforeMailSend: TOnBeforeMailSend;
     function GetConvertToCharSet: Boolean;
     procedure SetConvertToCharSet(const Value: Boolean);
@@ -146,34 +146,34 @@ type
     procedure SendSingleMail(const Address: string; ReplaceData: TStringList = nil);
   published
     property OnBeforeMailSend: TOnBeforeMailSend read FOnBeforeMailSend write FOnBeforeMailSend;
-    property OnMailSuccess: TOnMailSuccess read FOnMailSuccess write FOnMailSuccess;
-    property OnMailFailure: TOnMailFailure read FOnMailFailure write FOnMailFailure;
+    property OnMailSuccess   : TOnMailSuccess read FOnMailSuccess write FOnMailSuccess;
+    property OnMailFailure   : TOnMailFailure read FOnMailFailure write FOnMailFailure;
     property ConvertToCharSet: Boolean read GetConvertToCharSet write SetConvertToCharSet;
-    property IsCaseSensitive: Boolean read FIsCaseSensitive write FIsCaseSensitive;
-    property ContentType: TSmtpContentType read GetContentType write SetContentType;
-    property DataDelimiter: string read FDataDelimiter write FDataDelimiter;
-    property OnMailsDone: TOnMailsDone read FOnMailsDone write FOnMailsDone;
-    property Attachments: TStrings read GetAttachments write SetAttachments;
-    property HTMLCharSet: string read GetHTMLCharSet write SetHTMLCharSet;
-    property MailSubject: string read FMailSubject write FMailSubject;
-    property ReturnPath: string read GetReturnPath write SetReturnPath;
-    property PlainText: TStringList read FPlainText write SetPlainText;
-    property HTMLText: TStringList read FHTMLText write SetHTMLText;
-    property AuthType: TSmtpAuthType read GetAuthType write SetAuthType;
-    property CodePage: Cardinal read GetCodePage write SetCodePage;
-    property UserName: string read GetUserName write SetUserName;
-    property UserPass: string read GetUserPass write SetUserPass;
-    property CharSet: string read GetCharSet write SetCharSet;
-    property Blocking: Boolean read FBlocking write FBlocking;
-    property FromName: string read FFromName write FFromName;
-    property ReplyTo: string read GetReplyTo write SetReplyTo;
-    property Images: TStrings read GetImages write SetImages;
-    property CustomHeaders: TStringList read FCustomHeaders;
-    property Host: string read GetHost write SetHost;
-    property Port: string read GetPort write SetPort;
+    property IsCaseSensitive : Boolean read FIsCaseSensitive write FIsCaseSensitive;
+    property ContentType     : TSmtpContentType read GetContentType write SetContentType;
+    property DataDelimiter   : string read FDataDelimiter write FDataDelimiter;
+    property OnMailsDone     : TOnMailsDone read FOnMailsDone write FOnMailsDone;
+    property Attachments     : TStrings read GetAttachments write SetAttachments;
+    property HTMLCharSet     : string read GetHTMLCharSet write SetHTMLCharSet;
+    property MailSubject     : string read FMailSubject write FMailSubject;
+    property ReturnPath      : string read GetReturnPath write SetReturnPath;
+    property PlainText       : TStringList read FPlainText write SetPlainText;
+    property HTMLText        : TStringList read FHTMLText write SetHTMLText;
+    property AuthType        : TSmtpAuthType read GetAuthType write SetAuthType;
+    property CodePage        : Cardinal read GetCodePage write SetCodePage;
+    property UserName        : string read GetUserName write SetUserName;
+    property UserPass        : string read GetUserPass write SetUserPass;
+    property CharSet         : string read GetCharSet write SetCharSet;
+    property Blocking        : Boolean read FBlocking write FBlocking;
+    property FromName        : string read FFromName write FFromName;
+    property ReplyTo         : string read GetReplyTo write SetReplyTo;
+    property Images          : TStrings read GetImages write SetImages;
+    property CustomHeaders   : TStringList read FCustomHeaders;
+    property Host            : string read GetHost write SetHost;
+    property Port            : string read GetPort write SetPort;
   end;
 
-  procedure Register;
+procedure Register;
 
 implementation
 
@@ -199,7 +199,7 @@ begin
   FHtmlSmtpClient.OnProcessHeader := OnProcessHeader;
   FHtmlSmtpClient.OnRequestDone := SmtpClientRequestDone;
 
-  FHtmlSmtpClient.HtmlCharSet := cDefaultCharset;
+  FHtmlSmtpClient.HTMLCharSet := cDefaultCharset;
   FHtmlSmtpClient.CodePage := cDefaultCodePage;
   FHtmlSmtpClient.CharSet := cDefaultCharset;
 
@@ -246,7 +246,7 @@ end;
 
 function TRoboMailer.GetConvertToCharSet: Boolean;
 begin
-  Result := FHtmlSmtpClient.ConvertToCharset;
+  Result := FHtmlSmtpClient.ConvertToCharSet;
 end;
 
 function TRoboMailer.GetHost: string;
@@ -256,7 +256,7 @@ end;
 
 function TRoboMailer.GetHTMLCharSet: string;
 begin
-  Result := FHtmlSmtpClient.HtmlCharSet;
+  Result := FHtmlSmtpClient.HTMLCharSet;
 end;
 
 function TRoboMailer.GetImages: TStrings;
@@ -289,7 +289,7 @@ end;
 
 function TRoboMailer.GetUserName: string;
 begin
-  Result := FHtmlSmtpClient.Username;
+  Result := FHtmlSmtpClient.UserName;
 end;
 
 function TRoboMailer.GetUserPass: string;
@@ -307,8 +307,8 @@ end;
 
 procedure TRoboMailer.InternalSendMailList;
 var
-  Index: Integer;
-  LineArray: TStringList;
+  Index     : Integer;
+  LineArray : TStringList;
   ParamsList: TStringList;
 begin
   if FMailCount < FMailList.Count then
@@ -325,8 +325,8 @@ begin
       LineArray.DelimitedText := FMailList[FMailCount];
       ParamsList := TStringList.Create;
       try
-        for Index := 1 to LineArray.Count - 1 do
-          ParamsList.Values[FHeaders[Index]] := LineArray[Index];
+        for index := 1 to LineArray.Count - 1 do
+          ParamsList.Values[FHeaders[index]] := LineArray[index];
 
         try
           InternalSendSingleMail(LineArray[0], ParamsList);
@@ -403,12 +403,12 @@ begin
 
   FHtmlSmtpClient.HdrSubject := ReplaceContentTags(FMailSubject);
   FHtmlSmtpClient.FromName := ReplaceContentTags(FFromName);
-  FHtmlSmtpClient.HdrFrom  := ReplaceContentTags(FFromName);
+  FHtmlSmtpClient.HdrFrom := ReplaceContentTags(FFromName);
 
   // set the processed plain text to the component
   FHtmlSmtpClient.PlainText.Text := ReplaceContentTags(FPlainText.Text);
   // set the processed html text to the component
-  FHtmlSmtpClient.HtmlText.Text := ReplaceContentTags(FHTMLText.Text);
+  FHtmlSmtpClient.HTMLText.Text := ReplaceContentTags(FHTMLText.Text);
 
   // set the final properties and send the mail
   FHtmlSmtpClient.HdrTo := FAdress;
@@ -467,7 +467,7 @@ procedure TRoboMailer.SetCaseSensitive(const Data: TStringList);
 begin
   if Data <> nil then
     Data.CaseSensitive := FIsCaseSensitive;
-    
+
   FHeaders.CaseSensitive := FIsCaseSensitive;
   FMailList.CaseSensitive := FIsCaseSensitive;
   FHTMLText.CaseSensitive := FIsCaseSensitive;
@@ -491,7 +491,7 @@ end;
 
 procedure TRoboMailer.SetConvertToCharSet(const Value: Boolean);
 begin
-  FHtmlSmtpClient.ConvertToCharset := Value;
+  FHtmlSmtpClient.ConvertToCharSet := Value;
 end;
 
 procedure TRoboMailer.SetHost(const Value: string);
@@ -501,7 +501,7 @@ end;
 
 procedure TRoboMailer.SetHTMLCharSet(const Value: string);
 begin
-  FHtmlSmtpClient.HtmlCharSet := Value;
+  FHtmlSmtpClient.HTMLCharSet := Value;
 end;
 
 procedure TRoboMailer.SetHTMLText(const Value: TStringList);
@@ -536,7 +536,7 @@ end;
 
 procedure TRoboMailer.SetUserName(const Value: string);
 begin
-  FHtmlSmtpClient.Username := Value;
+  FHtmlSmtpClient.UserName := Value;
 end;
 
 procedure TRoboMailer.SetUserPass(const Value: string);
@@ -574,16 +574,24 @@ begin
     smtpConnect:
       begin
         case FHtmlSmtpClient.AuthType = smtpAuthNone of
-          False: FHtmlSmtpClient.Ehlo;
-          True: FHtmlSmtpClient.Helo;
+          False:
+            FHtmlSmtpClient.Ehlo;
+          True:
+            FHtmlSmtpClient.Helo;
         end;
       end;
-    smtpEhlo:     FHtmlSmtpClient.Auth;
-    smtpHelo:     FHtmlSmtpClient.MailFrom;
-    smtpAuth:     FHtmlSmtpClient.MailFrom;
-    smtpMailFrom: FHtmlSmtpClient.RcptTo;
-    smtpRcptTo:   FHtmlSmtpClient.Data;
-    smtpData:     FHtmlSmtpClient.Quit;
+    smtpEhlo:
+      FHtmlSmtpClient.Auth;
+    smtpHelo:
+      FHtmlSmtpClient.MailFrom;
+    smtpAuth:
+      FHtmlSmtpClient.MailFrom;
+    smtpMailFrom:
+      FHtmlSmtpClient.RcptTo;
+    smtpRcptTo:
+      FHtmlSmtpClient.Data;
+    smtpData:
+      FHtmlSmtpClient.Quit;
     smtpQuit:
       begin
         if Assigned(FOnMailSuccess) and not FFailure then

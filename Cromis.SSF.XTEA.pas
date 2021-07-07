@@ -45,7 +45,7 @@ uses
   SysUtils, Classes,
 
   // omniXML library units
-  {$IFNDEF USE_MSXML}OmniXML{$ELSE}MSXML, OmniXML_MSXML{$ENDIF}, OmniXML_Types, OmniXMLUtils,
+  {$IFNDEF USE_MSXML}Xml.Internal.OmniXML{$ELSE}MSXML, OmniXML_MSXML{$ENDIF}, //OmniXML_Types, OmniXMLUtils,
 
   // cromis library units
   Cromis.SimpleStorage, Cromis.Streams, Cromis.XTEA;
